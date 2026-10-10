@@ -8,6 +8,28 @@
     <meta name="keywords" content="Mewah Farosh, mewahfarosh, dry fruits, online store">
     <meta name="robots" content="index, follow">
 </head>
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBW7ihA9k8Y8R2Nvp3wSqkTAubBhopp8pE",
+    authDomain: "mewahfarosh-27a98.firebaseapp.com",
+    projectId: "mewahfarosh-27a98",
+    storageBucket: "mewahfarosh-27a98.firebasestorage.app",
+    messagingSenderId: "1030846900586",
+    appId: "1.1030846900586:web:5eb9e6b60151f6fc9b9d13",
+    measurementId: "G-WXZE8XXVQ0"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
+  window.db = db;
+  window.collection = collection;
+  window.getDocs = getDocs;
+ </script>
+ 
  <style>
 :root{--green:#0c3b2e;--green2:#145943;--gold:#b58b3c;--cream:#f6f1e6;--ink:#18251f;--white:#fff}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--cream);color:var(--ink)}
