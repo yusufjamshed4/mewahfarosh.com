@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mewah Farosh — Royal Confectionery & Dry Fruits</title>
+<title>Mewah Farosh — Royal Confectionery (LEGACY 1953)</title>
 
-<!-- Fonts & Icons -->
+<!-- Google Fonts & FontAwesome -->
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<!-- Firebase Integration -->
+<!-- Firebase SDK -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
   import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
@@ -29,31 +29,84 @@
 
   window.db = db;
   window.cart = [];
-  window.products = [];
 
-  // Authentic Pure Dates & Nuts High Definition Imagery
-  const defaultItems = [
-    {name:"Ajwa Al-Aliya Dates", cat:"Dates", price:999, pack:"500g", badge:"Royal Reserve", image:"https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=600"},
-    {name:"Royal Medjool Dates", cat:"Dates", price:799, pack:"500g", badge:"Exclusive", image:"https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600"},
-    {name:"California Mamra Almonds", cat:"Nuts", price:1299, pack:"500g", badge:"Bestseller", image:"https://images.unsplash.com/photo-1508061252227-14231f8f3c4c?w=600"},
-    {name:"King Size Whole Cashews", cat:"Nuts", price:999, pack:"500g", badge:"Premium", image:"https://images.unsplash.com/photo-1536591375315-1b836814d2b9?w=600"},
-    {name:"Organic Chia Seeds", cat:"Seeds", price:349, pack:"250g", badge:"Superfood", image:"https://images.unsplash.com/photo-1588615419958-e3a2b75a1334?w=600"},
-    {name:"Raw Pumpkin Seeds", cat:"Seeds", price:399, pack:"250g", badge:"Healthy Choice", image:"https://images.unsplash.com/photo-1608686207856-001b95cf60ca?w=600"},
-    {name:"Iranian Sun-Dried Anjeer", cat:"Dry Fruits", price:899, pack:"250g", badge:"Handpicked", image:"https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=600"}
+  // 100% Authentic Confectionery Items (Dates, Nuts, Seeds, Anjeer Only)
+  window.products = [
+    {
+      name: "Ajwa Al-Aliya Dates",
+      cat: "Dates",
+      price: 999,
+      pack: "500g",
+      badge: "Royal Reserve",
+      image: "https://images.pexels.com/photos/7525164/pexels-photo-7525164.jpeg?auto=compress&cs=tinysrgb&w=600"
+    },
+    {
+      name: "Royal Medjool Dates",
+      cat: "Dates",
+      price: 799,
+      pack: "500g",
+      badge: "Exclusive",
+      image: "https://images.pexels.com/photos/7525183/pexels-photo-7525183.jpeg?auto=compress&cs=tinysrgb&w=600"
+    },
+    {
+      name: "California Mamra Almonds",
+      cat: "Nuts",
+      price: 1299,
+      pack: "500g",
+      badge: "Bestseller",
+      image: "https://images.pexels.com/photos/1295572/pexels-photo-1295572.jpeg?auto=compress&cs=tinysrgb&w=600"
+    },
+    {
+      name: "King Size Whole Cashews",
+      cat: "Nuts",
+      price: 999,
+      pack: "500g",
+      badge: "Premium",
+      image: "https://images.pexels.com/photos/4198024/pexels-photo-4198024.jpeg?auto=compress&cs=tinysrgb&w=600"
+    },
+    {
+      name: "Organic Chia Seeds",
+      cat: "Seeds",
+      price: 349,
+      pack: "250g",
+      badge: "Superfood",
+      image: "https://images.pexels.com/photos/8992842/pexels-photo-8992842.jpeg?auto=compress&cs=tinysrgb&w=600"
+    },
+    {
+      name: "Raw Pumpkin Seeds",
+      cat: "Seeds",
+      price: 399,
+      pack: "250g",
+      badge: "Healthy Choice",
+      image: "https://images.pexels.com/photos/8992928/pexels-photo-8992928.jpeg?auto=compress&cs=tinysrgb&w=600"
+    },
+    {
+      name: "Iranian Sun-Dried Anjeer",
+      cat: "Dry Fruits",
+      price: 899,
+      pack: "250g",
+      badge: "Handpicked",
+      image: "https://images.pexels.com/photos/6157052/pexels-photo-6157052.jpeg?auto=compress&cs=tinysrgb&w=600"
+    }
   ];
 
   window.loadStoreData = async function() {
     try {
       const snap = await getDocs(collection(db, "products"));
-      window.products = [];
-      snap.forEach(docSnap => window.products.push(docSnap.data()));
-      if(window.products.length === 0) {
-        window.products = defaultItems;
+      let cloudItems = [];
+      snap.forEach(docSnap => {
+        let data = docSnap.data();
+        // Ignore old wrong test uploads (like shoes/bags)
+        if(data.name && !data.name.toLowerCase().includes("shoe") && !data.name.toLowerCase().includes("bag")) {
+          cloudItems.push(data);
+        }
+      });
+      if(cloudItems.length > 0) {
+        window.products = cloudItems;
       }
       renderProducts();
       loadReviews();
     } catch(e) {
-      window.products = defaultItems;
       renderProducts();
     }
   }
@@ -113,7 +166,7 @@
 
     document.getElementById("revName").value = "";
     document.getElementById("revComment").value = "";
-    alert("Thank you! Your royal review is posted live.");
+    alert("Thank you! Your review is published live.");
   }
 
   window.onload = function() {
@@ -125,45 +178,44 @@
 
 <style>
 :root {
-  --black-bg: #0b0d0c;
-  --dark-panel: #141715;
+  --black-bg: #070908;
+  --dark-panel: #111412;
   --imperial-gold: #d4af37;
-  --gold-accent: #f3e5ab;
-  --gold-glow: #e6ca65;
+  --gold-glow: #f3e5ab;
+  --card-dark: #181c19;
   --text-light: #f3f4f6;
-  --card-dark: #1a1e1b;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
 body { background: var(--black-bg); color: var(--text-light); overflow-x: hidden; position: relative; }
 
-/* Gold Shimmer Canvas Layer */
+/* Dynamic Animated Background Canvas */
 #bgCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; opacity: 0.9; }
 
-/* Background Watermark Logo Animation */
+/* Dynamic Background Watermark Logo Theme */
 .bg-logo-watermark {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 75vw;
-  max-width: 700px;
+  max-width: 650px;
   opacity: 0.05;
   pointer-events: none;
   z-index: 0;
-  filter: drop-shadow(0 0 20px var(--imperial-gold));
+  filter: drop-shadow(0 0 25px var(--imperial-gold));
   animation: logoPulse 12s infinite alternate ease-in-out;
 }
 @keyframes logoPulse {
   0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 0.04; }
-  100% { transform: translate(-50%, -50%) scale(1.08) rotate(2deg); opacity: 0.07; }
+  100% { transform: translate(-50%, -50%) scale(1.08) rotate(3deg); opacity: 0.07; }
 }
 
 /* Notice Bar */
-.top-notice { background: linear-gradient(90deg, #000, #1b1f1c, #000); color: var(--imperial-gold); text-align: center; padding: 10px 15px; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(212,175,55,0.3); position: relative; z-index: 10; }
+.top-notice { background: linear-gradient(90deg, #000, #181c19, #000); color: var(--imperial-gold); text-align: center; padding: 10px 15px; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(212,175,55,0.3); position: relative; z-index: 10; }
 
-/* Navbar */
-nav { background: rgba(11, 13, 12, 0.95); backdrop-filter: blur(15px); display: flex; justify-content: space-between; align-items: center; padding: 16px 6%; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(212,175,55,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+/* Navigation */
+nav { background: rgba(7, 9, 8, 0.95); backdrop-filter: blur(15px); display: flex; justify-content: space-between; align-items: center; padding: 16px 6%; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(212,175,55,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.9); }
 .brand-box { display: flex; align-items: center; gap: 14px; text-decoration: none; }
 .brand-logo { width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--imperial-gold); box-shadow: 0 0 20px rgba(212,175,55,0.5); object-fit: cover; background: #fff; }
 .brand-titles h2 { font-family: 'Cinzel', serif; color: var(--imperial-gold); font-size: 22px; font-weight: 800; letter-spacing: 1.5px; }
@@ -177,7 +229,7 @@ nav { background: rgba(11, 13, 12, 0.95); backdrop-filter: blur(15px); display: 
 .cart-trigger { background: linear-gradient(135deg, var(--imperial-gold), #9e7d3b); color: #000; border: none; padding: 9px 20px; border-radius: 30px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(212,175,55,0.4); }
 
 /* Hero Section */
-.hero { background: radial-gradient(circle at top right, #1f2420, var(--black-bg)); color: white; padding: 90px 6% 80px 6%; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 50px; position: relative; z-index: 1; border-bottom: 2px solid var(--imperial-gold); }
+.hero { background: radial-gradient(circle at top right, #1f2621, var(--black-bg)); color: white; padding: 90px 6% 80px 6%; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 50px; position: relative; z-index: 1; border-bottom: 2px solid var(--imperial-gold); }
 .hero-text h3 { font-family: 'Cinzel', serif; color: var(--imperial-gold); font-size: 15px; letter-spacing: 4px; margin-bottom: 12px; font-weight: 700; }
 .hero-text h1 { font-family: 'Cinzel', serif; font-size: 3.6rem; line-height: 1.15; color: #ffffff; margin-bottom: 22px; text-shadow: 0 5px 20px rgba(0,0,0,0.9); }
 .hero-text p { font-size: 1.05rem; color: #d1d5db; line-height: 1.7; margin-bottom: 35px; max-width: 520px; }
@@ -186,7 +238,7 @@ nav { background: rgba(11, 13, 12, 0.95); backdrop-filter: blur(15px); display: 
 
 .hero-visual { text-align: center; position: relative; }
 .hero-img-frame { width: 100%; max-width: 440px; border-radius: 30px; border: 3px solid var(--imperial-gold); padding: 8px; background: rgba(212,175,55,0.15); box-shadow: 0 25px 50px rgba(0,0,0,0.9); }
-.hero-img-frame img { width: 100%; border-radius: 22px; display: block; object-fit: cover; }
+.hero-img-frame img { width: 100%; height: 320px; border-radius: 22px; display: block; object-fit: cover; }
 
 /* Legacy Counters Section */
 .counters-bar { background: var(--dark-panel); padding: 50px 6%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; text-align: center; border-bottom: 1px solid rgba(212,175,55,0.25); position: relative; z-index: 1; }
@@ -255,7 +307,7 @@ footer span.author { color: var(--imperial-gold); font-weight: 700; }
 <body>
 
   <!-- Background Watermark Logo Theme -->
-<img src="https://yusufjamshed4.github.io/mewahfarosh.com/logo.png" class="bg-logo-watermark" alt="Mewah Farosh Logo Watermark" onerror="this.src='https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400'">
+<img src="https://yusufjamshed4.github.io/mewahfarosh.com/logo.png" class="bg-logo-watermark" alt="Mewah Farosh Logo Watermark" onerror="this.style.display='none'">
 
 <!-- Dynamic Gold Particle Canvas Background -->
 <canvas id="bgCanvas"></canvas>
@@ -266,7 +318,7 @@ footer span.author { color: var(--imperial-gold); font-weight: 700; }
 <!-- Navbar -->
 <nav>
   <a href="#" class="brand-box">
-    <img src="https://yusufjamshed4.github.io/mewahfarosh.com/logo.png" class="brand-logo" alt="Mewah Farosh Logo" onerror="this.src='https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=100'">
+    <img src="https://yusufjamshed4.github.io/mewahfarosh.com/logo.png" class="brand-logo" alt="Mewah Farosh Logo" onerror="this.src='https://images.pexels.com/photos/7525164/pexels-photo-7525164.jpeg?auto=compress&cs=tinysrgb&w=100'">
     <div class="brand-titles">
       <h2>MEWAH FAROSH</h2>
       <span>LEGACY 1953</span>
@@ -292,7 +344,7 @@ footer span.author { color: var(--imperial-gold); font-weight: 700; }
 
   <div class="hero-visual">
     <div class="hero-img-frame">
-      <img src="https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=600" alt="Pure Royal Dates Confectionery">
+      <img src="https://images.pexels.com/photos/7525164/pexels-photo-7525164.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Pure Royal Ajwa Dates Confectionery">
     </div>
   </div>
 </section>
@@ -457,7 +509,7 @@ function renderProducts() {
   grid.innerHTML = filtered.map((p, idx) => `
     <div class="product-card">
       ${p.badge ? `<span class="p-tag">${p.badge}</span>` : ''}
-      <img src="${p.image || 'https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=400'}" class="p-img" alt="${p.name}">
+      <img src="${p.image}" class="p-img" alt="${p.name}" onerror="this.src='https://images.pexels.com/photos/7525164/pexels-photo-7525164.jpeg?auto=compress&cs=tinysrgb&w=400'">
       <div>
         <div class="p-title">${p.name}</div>
         <div class="p-meta">${p.cat} • ${p.pack || '500g'}</div>
