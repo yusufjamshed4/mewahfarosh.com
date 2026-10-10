@@ -6,13 +6,13 @@
 <title>Mewah Farosh — Royal Confectionery & Dry Fruits</title>
 
 <!-- Fonts & Icons -->
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
 <!-- Firebase Integration -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, getDocs, addDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBW7ihA9k8Y8R2Nvp3wSqkTAubBhopp8pE",
@@ -31,30 +31,33 @@
   window.cart = [];
   window.products = [];
 
-  // Load Products from Firestore
+  // High Quality Default Fallback Products
+  const defaultItems = [
+    {name:"Ajwa Al-Aliya Dates", cat:"Dates", price:999, pack:"500g", badge:"Royal Reserve", image:"https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=600"},
+    {name:"Royal Medjool Dates", cat:"Dates", price:799, pack:"500g", badge:"Exclusive", image:"https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600"},
+    {name:"California Mamra Almonds", cat:"Nuts", price:1299, pack:"500g", badge:"Bestseller", image:"https://images.unsplash.com/photo-1508061252227-14231f8f3c4c?w=600"},
+    {name:"King Size Whole Cashews", cat:"Nuts", price:999, pack:"500g", badge:"Premium", image:"https://images.unsplash.com/photo-1536591375315-1b836814d2b9?w=600"},
+    {name:"Organic Chia Seeds", cat:"Seeds", price:349, pack:"250g", badge:"Superfood", image:"https://images.unsplash.com/photo-1588615419958-e3a2b75a1334?w=600"},
+    {name:"Raw Pumpkin Seeds", cat:"Seeds", price:399, pack:"250g", badge:"Healthy Choice", image:"https://images.unsplash.com/photo-1608686207856-001b95cf60ca?w=600"},
+    {name:"Iranian Sun-Dried Anjeer", cat:"Dry Fruits", price:899, pack:"250g", badge:"Handpicked", image:"https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=600"}
+  ];
+
   window.loadStoreData = async function() {
     try {
       const snap = await getDocs(collection(db, "products"));
       window.products = [];
       snap.forEach(docSnap => window.products.push(docSnap.data()));
-      
       if(window.products.length === 0) {
-        window.products = [
-          {name:"Ajwa Al-Aliya Dates", cat:"Dates", price:999, pack:"500g", badge:"Royal Reserve", image:""},
-          {name:"Royal Medjool Dates", cat:"Dates", price:799, pack:"500g", badge:"Exclusive", image:""},
-          {name:"Californian Mamra Almonds", cat:"Nuts", price:1299, pack:"500g", badge:"Bestseller", image:""},
-          {name:"Exotic King Cashews", cat:"Nuts", price:999, pack:"500g", badge:"Premium", image:""},
-          {name:"Organic Chia Seeds", cat:"Seeds", price:349, pack:"250g", badge:"Superfood", image:""},
-          {name:"Raw Pumpkin Seeds", cat:"Seeds", price:399, pack:"250g", badge:"Healthy Choice", image:""},
-          {name:"Iranian Sun-Dried Anjeer", cat:"Dry Fruits", price:899, pack:"250g", badge:"Handpicked", image:""}
-        ];
+        window.products = defaultItems;
       }
       renderProducts();
       loadReviews();
-    } catch(e) { console.log(e); }
+    } catch(e) {
+      window.products = defaultItems;
+      renderProducts();
+    }
   }
 
-  // Load Reviews from Firestore
   window.loadReviews = async function() {
     try {
       const snap = await getDocs(collection(db, "reviews"));
@@ -87,7 +90,6 @@
     } catch(e) { console.log(e); }
   }
 
-  // Instant Post Review
   window.submitReview = async function(e) {
     e.preventDefault();
     const name = document.getElementById("revName").value;
@@ -97,7 +99,6 @@
     const newRev = { name, comment, time: timeStr, createdAt: new Date() };
     await addDoc(collection(db, "reviews"), newRev);
     
-    // Instant local prepend (No delay)
     const rContainer = document.getElementById("reviewList");
     const tempHtml = `
       <div class="review-card instant-anim">
@@ -116,7 +117,7 @@
   }
 
   window.onload = function() {
-    initCanvas();
+    initTagdaCanvas();
     window.loadStoreData();
     setupCounterAnimation();
   }
@@ -124,10 +125,10 @@
 
 <style>
 :root {
-  --swiss-dark: #071f17;
+  --swiss-dark: #051a13;
   --swiss-emerald: #0c3b2e;
   --imperial-gold: #c5a059;
-  --gold-glow: #e6ca65;
+  --gold-glow: #f3d078;
   --cream-canvas: #fcf9f2;
   --card-bg: #ffffff;
   --text-dark: #111827;
@@ -136,18 +137,36 @@
 * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; scroll-behavior: smooth; }
 body { background: var(--cream-canvas); color: var(--text-dark); overflow-x: hidden; position: relative; }
 
-/* Dynamic Canvas Particle Layer */
-#bgCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; opacity: 0.6; }
+/* Tagda Background Canvas */
+#bgCanvas { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 0; opacity: 0.85; }
+
+/* Dynamic Background Watermark Logo Animation */
+.bg-logo-watermark {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70vw;
+  max-width: 650px;
+  opacity: 0.04;
+  pointer-events: none;
+  z-index: 0;
+  animation: logoPulse 10s infinite alternate ease-in-out;
+}
+@keyframes logoPulse {
+  0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 0.03; }
+  100% { transform: translate(-50%, -50%) scale(1.1) rotate(3deg); opacity: 0.06; }
+}
 
 /* Announcement Bar */
-.top-notice { background: linear-gradient(90deg, #051610, #0c3b2e, #051610); color: var(--imperial-gold); text-align: center; padding: 9px 15px; font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(197,160,89,0.3); position: relative; z-index: 10; }
+.top-notice { background: linear-gradient(90deg, #03110c, #0c3b2e, #03110c); color: var(--imperial-gold); text-align: center; padding: 10px 15px; font-size: 12px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; border-bottom: 1px solid rgba(197,160,89,0.3); position: relative; z-index: 10; }
 
 /* Navigation */
-nav { background: rgba(7, 31, 23, 0.92); backdrop-filter: blur(12px); display: flex; justify-content: space-between; align-items: center; padding: 16px 6%; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(197,160,89,0.25); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+nav { background: rgba(5, 26, 19, 0.95); backdrop-filter: blur(15px); display: flex; justify-content: space-between; align-items: center; padding: 16px 6%; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(197,160,89,0.3); box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
 .brand-box { display: flex; align-items: center; gap: 14px; text-decoration: none; }
-.brand-logo { width: 52px; height: 52px; border-radius: 50%; border: 2px solid var(--imperial-gold); box-shadow: 0 0 15px rgba(197,160,89,0.4); object-fit: cover; }
-.brand-titles h2 { font-family: 'Cinzel', serif; color: var(--imperial-gold); font-size: 22px; font-weight: 700; letter-spacing: 1px; }
-.brand-titles span { color: #a3b8b0; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; display: block; }
+.brand-logo { width: 54px; height: 54px; border-radius: 50%; border: 2px solid var(--imperial-gold); box-shadow: 0 0 20px rgba(197,160,89,0.5); object-fit: cover; }
+.brand-titles h2 { font-family: 'Cinzel', serif; color: var(--imperial-gold); font-size: 22px; font-weight: 800; letter-spacing: 1.5px; }
+.brand-titles span { color: #a3b8b0; font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; display: block; font-weight: 600; }
 
 .nav-right { display: flex; align-items: center; gap: 25px; }
 .nav-link { color: #d1e0db; text-decoration: none; font-weight: 500; font-size: 14px; transition: 0.3s; }
@@ -157,11 +176,11 @@ nav { background: rgba(7, 31, 23, 0.92); backdrop-filter: blur(12px); display: f
 .cart-trigger { background: linear-gradient(135deg, var(--imperial-gold), #9e7d3b); color: var(--swiss-dark); border: none; padding: 9px 20px; border-radius: 30px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(197,160,89,0.3); }
 
 /* Hero Section */
-.hero { background: radial-gradient(circle at top right, #0e4839, var(--swiss-dark)); color: white; padding: 100px 6% 80px 6%; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 50px; position: relative; z-index: 1; border-bottom: 2px solid var(--imperial-gold); }
-.hero-text h3 { font-family: 'Cinzel', serif; color: var(--imperial-gold); font-size: 14px; letter-spacing: 4px; margin-bottom: 12px; }
-.hero-text h1 { font-family: 'Cinzel', serif; font-size: 3.6rem; line-height: 1.15; color: #fdfbf7; margin-bottom: 22px; text-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+.hero { background: radial-gradient(circle at top right, #0a3d30, var(--swiss-dark)); color: white; padding: 90px 6% 80px 6%; display: grid; grid-template-columns: 1.1fr 0.9fr; align-items: center; gap: 50px; position: relative; z-index: 1; border-bottom: 2px solid var(--imperial-gold); }
+.hero-text h3 { font-family: 'Cinzel', serif; color: var(--imperial-gold); font-size: 15px; letter-spacing: 4px; margin-bottom: 12px; font-weight: 700; }
+.hero-text h1 { font-family: 'Cinzel', serif; font-size: 3.6rem; line-height: 1.15; color: #fdfbf7; margin-bottom: 22px; text-shadow: 0 5px 20px rgba(0,0,0,0.6); }
 .hero-text p { font-size: 1.05rem; color: #b8ccc5; line-height: 1.7; margin-bottom: 35px; max-width: 520px; }
-.btn-hero { background: linear-gradient(135deg, var(--imperial-gold), #a68138); color: var(--swiss-dark); padding: 15px 36px; border-radius: 35px; text-decoration: none; font-weight: 700; font-size: 15px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(197,160,89,0.4); transition: 0.4s; }
+.btn-hero { background: linear-gradient(135deg, var(--imperial-gold), #a68138); color: var(--swiss-dark); padding: 15px 36px; border-radius: 35px; text-decoration: none; font-weight: 800; font-size: 15px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 10px 30px rgba(197,160,89,0.4); transition: 0.4s; }
 .btn-hero:hover { transform: translateY(-3px) scale(1.02); box-shadow: 0 15px 35px rgba(197,160,89,0.6); }
 
 .hero-visual { text-align: center; position: relative; }
@@ -169,14 +188,14 @@ nav { background: rgba(7, 31, 23, 0.92); backdrop-filter: blur(12px); display: f
 .hero-img-frame img { width: 100%; border-radius: 22px; display: block; object-fit: cover; }
 
 /* Legacy Counters Section */
-.counters-bar { background: var(--swiss-dark); padding: 50px 6%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; text-align: center; border-bottom: 1px solid rgba(197,160,89,0.2); position: relative; z-index: 1; }
-.counter-card h2 { font-family: 'Cinzel', serif; font-size: 3.2rem; color: var(--imperial-gold); font-weight: 700; text-shadow: 0 0 20px rgba(197,160,89,0.3); }
-.counter-card p { color: #a8be88; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; font-weight: 600; }
+.counters-bar { background: var(--swiss-dark); padding: 50px 6%; display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px; text-align: center; border-bottom: 1px solid rgba(197,160,89,0.25); position: relative; z-index: 1; }
+.counter-card h2 { font-family: 'Cinzel', serif; font-size: 3.2rem; color: var(--imperial-gold); font-weight: 800; text-shadow: 0 0 20px rgba(197,160,89,0.3); }
+.counter-card p { color: #a8be88; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-top: 5px; font-weight: 700; }
 
 /* Store Section */
 .store-section { padding: 80px 6%; position: relative; z-index: 1; }
 .section-header { text-align: center; margin-bottom: 45px; }
-.section-header h2 { font-family: 'Cinzel', serif; font-size: 2.8rem; color: var(--swiss-emerald); }
+.section-header h2 { font-family: 'Cinzel', serif; font-size: 2.8rem; color: var(--swiss-emerald); font-weight: 800; }
 .section-header p { color: #6b7280; font-size: 1rem; margin-top: 8px; }
 
 .filter-wrap { display: flex; justify-content: center; gap: 15px; margin-bottom: 45px; flex-wrap: wrap; }
@@ -200,13 +219,13 @@ nav { background: rgba(7, 31, 23, 0.92); backdrop-filter: blur(12px); display: f
 .review-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 40px; }
 .review-card { background: white; padding: 25px; border-radius: 18px; border: 1px solid rgba(197,160,89,0.2); box-shadow: 0 5px 20px rgba(0,0,0,0.03); }
 .rev-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.rev-header h4 { color: var(--swiss-emerald); font-family: 'Cinzel', serif; font-size: 1.05rem; }
+.rev-header h4 { color: var(--swiss-emerald); font-family: 'Cinzel', serif; font-size: 1.05rem; font-weight: 700; }
 .rev-time { font-size: 11px; color: #9ca3af; font-weight: 500; }
 .review-card .stars { color: #f59e0b; font-size: 13px; margin-bottom: 12px; }
 .review-card p { color: #4b5563; font-size: 14px; line-height: 1.6; }
 
 .review-form-card { background: white; border-radius: 24px; padding: 40px; max-width: 620px; margin: 50px auto 0 auto; box-shadow: 0 15px 40px rgba(0,0,0,0.06); border: 1px solid var(--imperial-gold); }
-.review-form-card h3 { font-family: 'Cinzel', serif; color: var(--swiss-emerald); font-size: 1.8rem; text-align: center; margin-bottom: 20px; }
+.review-form-card h3 { font-family: 'Cinzel', serif; color: var(--swiss-emerald); font-size: 1.8rem; text-align: center; margin-bottom: 20px; font-weight: 800; }
 .review-form-card input, .review-form-card textarea { width: 100%; padding: 14px 18px; margin-bottom: 16px; border: 1px solid #e5e7eb; border-radius: 12px; outline: none; font-size: 14px; }
 
 /* Floating Controls */
@@ -223,7 +242,7 @@ nav { background: rgba(7, 31, 23, 0.92); backdrop-filter: blur(12px); display: f
 
 /* Footer */
 footer { background: var(--swiss-dark); color: white; text-align: center; padding: 45px 6%; border-top: 2px solid var(--imperial-gold); position: relative; z-index: 1; }
-footer h3 { font-family: 'Cinzel', serif; color: var(--imperial-gold); font-size: 1.4rem; letter-spacing: 2px; }
+footer h3 { font-family: 'Cinzel', serif; color: var(--imperial-gold); font-size: 1.4rem; letter-spacing: 2px; font-weight: 800; }
 footer p { color: #9ca3af; font-size: 14px; margin-top: 10px; }
 footer span.author { color: var(--imperial-gold); font-weight: 700; }
 
@@ -234,11 +253,14 @@ footer span.author { color: var(--imperial-gold); font-weight: 700; }
 </head>
 <body>
 
-  <!-- Dynamic Particle Canvas Background -->
+  <!-- Background Watermark Logo Theme -->
+<img src="https://yusufjamshed4.github.io/mewahfarosh.com/logo.png" class="bg-logo-watermark" alt="Watermark Theme" onerror="this.style.display='none'">
+
+<!-- Dynamic Particle Canvas Background -->
 <canvas id="bgCanvas"></canvas>
 
 <!-- Announcement -->
-<div class="top-notice">✨ EST. 1953 — Royal Confectionery • Handpicked Dates & Exotic Nuts • Express Delivery ✨</div>
+<div class="top-notice">✨ LEGACY 1953 — Royal Confectionery • Handpicked Dates & Exotic Nuts • Express Delivery ✨</div>
 
 <!-- Navbar -->
 <nav>
@@ -246,7 +268,7 @@ footer span.author { color: var(--imperial-gold); font-weight: 700; }
     <img src="https://yusufjamshed4.github.io/mewahfarosh.com/logo.png" class="brand-logo" alt="Mewah Farosh Logo" onerror="this.src='https://images.unsplash.com/photo-1543508282-6319a3e2621f?w=100'">
     <div class="brand-titles">
       <h2>MEWAH FAROSH</h2>
-      <span>LEGACY OF ELEGANCE</span>
+      <span>LEGACY 1953</span>
     </div>
   </a>
 
@@ -261,7 +283,7 @@ footer span.author { color: var(--imperial-gold); font-weight: 700; }
 <!-- Hero Banner Section -->
 <section class="hero">
   <div class="hero-text">
-    <h3>EST. 1953 • ROYAL SELECTION</h3>
+    <h3>LEGACY 1953 • ROYAL SELECTION</h3>
     <h1>Taste The Nature's Finest Luxury.</h1>
     <p>Hand-picked Ajwa Al-Aliya, Medjool Dates, Royal Iranian Anjeer, California Mamra Almonds, and Exotic Superfood Seeds crafted with perfection.</p>
     <a href="#shop" class="btn-hero">Explore Collection <i class="fa-solid fa-arrow-right"></i></a>
@@ -363,10 +385,10 @@ footer span.author { color: var(--imperial-gold); font-weight: 700; }
   <p>Developed by <span class="author">Yusuf Jamshed</span></p>
 </footer>
 
-<!-- Interactive Engine Scripts -->
+<!-- Tagda Interactive Engine Scripts -->
 <script>
-// Floating Particle Canvas Setup
-function initCanvas() {
+// Glowing Particle Shimmer Background Animation
+function initTagdaCanvas() {
   const canvas = document.getElementById("bgCanvas");
   if(!canvas) return;
   const ctx = canvas.getContext("2d");
@@ -374,32 +396,38 @@ function initCanvas() {
   canvas.height = window.innerHeight;
 
   let particles = [];
-  for(let i=0; i<45; i++) {
+  for(let i=0; i<65; i++) {
     particles.push({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      radius: Math.random() * 2.5 + 1,
-      speedX: (Math.random() - 0.5) * 1,
-      speedY: (Math.random() - 0.5) * 1,
+      radius: Math.random() * 3 + 1,
+      speedX: (Math.random() - 0.5) * 0.8,
+      speedY: (Math.random() - 0.5) * 0.8,
+      alpha: Math.random(),
       color: '#c5a059'
     });
   }
 
-  function render() {
+  function animate() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => {
       p.x += p.speedX; p.y += p.speedY;
       if(p.x < 0 || p.x > canvas.width) p.speedX *= -1;
       if(p.y < 0 || p.y > canvas.height) p.speedY *= -1;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      ctx.fillStyle = p.color; ctx.fill();
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(197, 160, 89, ${p.alpha})`;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "#f3d078";
+      ctx.fill();
     });
-    requestAnimationFrame(render);
+    requestAnimationFrame(animate);
   }
-  render();
+  animate();
 }
 
-// Live Counter Numbers Engine
+// Live Counter Animation
 function setupCounterAnimation() {
   const counters = document.querySelectorAll('.counter');
   counters.forEach(counter => {
@@ -409,7 +437,7 @@ function setupCounterAnimation() {
     const update = () => {
       count += speed;
       if(count < target) {
-        counter.innerText = Math.ceil(count) + (target === 100 ? '' : '');
+        counter.innerText = Math.ceil(count);
         setTimeout(update, 35);
       } else {
         counter.innerText = target + "+";
@@ -431,7 +459,7 @@ function renderProducts() {
   grid.innerHTML = filtered.map((p, idx) => `
     <div class="product-card">
       ${p.badge ? `<span class="p-tag">${p.badge}</span>` : ''}
-      <img src="${p.image || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=300'}" class="p-img" alt="${p.name}">
+      <img src="${p.image || 'https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400'}" class="p-img" alt="${p.name}">
       <div>
         <div class="p-title">${p.name}</div>
         <div class="p-meta">${p.cat} • ${p.pack || '500g'}</div>
